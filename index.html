@@ -1,0 +1,1054 @@
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مراجعة Single Linked List | أبرار الحربي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06040d;
+  --gold:#e9c46a;
+  --gold-2:#f7e3a1;
+  --gold-3:#c9a227;
+  --violet:#8b5cf6;
+  --pink:#f472b6;
+  --teal:#2dd4bf;
+  --green:#34d399;
+  --red:#f87171;
+  --txt:#f2eefb;
+  --muted:#a79ec4;
+  --stroke:rgba(255,255,255,.09);
+}
+html,body{height:100%}
+body{
+  font-family:'Cairo',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.7;
+}
+/* ---------- Background ---------- */
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.aurora span{position:absolute;border-radius:50%;filter:blur(110px);opacity:.42;animation:drift 24s ease-in-out infinite alternate}
+.a1{width:540px;height:540px;background:#7c3aed;top:-160px;right:-140px}
+.a2{width:480px;height:480px;background:#0f766e;bottom:-180px;left:-140px;animation-delay:-7s;opacity:.35}
+.a3{width:440px;height:440px;background:#be185d;top:32%;left:38%;animation-delay:-14s;opacity:.20}
+.a4{width:380px;height:380px;background:#b45309;bottom:8%;right:12%;animation-delay:-4s;opacity:.22}
+@keyframes drift{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(-44px,64px,0) scale(1.16)}
+  100%{transform:translate3d(48px,-44px,0) scale(.94)}
+}
+.grid-overlay{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 78%);
+}
+#confetti{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-events:none}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:900px;margin:0 auto;padding:24px 18px 80px}
+.wrap.wide{max-width:1000px}
+.screen{display:none;animation:fadeUp .5s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.card{
+  background:linear-gradient(165deg,rgba(255,255,255,.062),rgba(255,255,255,.018));
+  border:1px solid var(--stroke);
+  border-radius:26px;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 40px 80px -44px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.07);
+  padding:28px;
+}
+.gold-text{
+  background:linear-gradient(100deg,#fff3cf,#e9c46a 35%,#fff0c2 55%,#c9a227 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+
+/* ---------- Hero ---------- */
+.hero{padding:38px 30px;text-align:center;position:relative;overflow:hidden}
+.hero::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 0%,rgba(233,196,106,.16),transparent 62%);
+}
+.sa-greet{
+  display:inline-flex;align-items:center;gap:12px;
+  background:linear-gradient(120deg,rgba(15,118,80,.28),rgba(15,118,80,.06));
+  border:1px solid rgba(52,211,153,.35);
+  border-radius:999px;padding:9px 18px;font-weight:600;font-size:.95rem;
+  color:#b8f5dd;margin-bottom:22px;position:relative;z-index:1;
+}
+.sa-greet .flag{font-size:1.25rem;filter:drop-shadow(0 0 10px rgba(52,211,153,.6))}
+h1{font-size:clamp(1.6rem,4.6vw,2.85rem);font-weight:900;line-height:1.35;letter-spacing:-.5px;position:relative;z-index:1}
+.hero p.sub{color:var(--muted);margin-top:14px;font-size:1.02rem;max-width:620px;margin-inline:auto;position:relative;z-index:1}
+.hero .en{font-family:'Inter',sans-serif;direction:ltr;display:inline-block;letter-spacing:.5px}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0 26px;position:relative;z-index:1}
+.stat{
+  background:linear-gradient(165deg,rgba(255,255,255,.06),rgba(255,255,255,.015));
+  border:1px solid var(--stroke);border-radius:18px;padding:16px 8px;
+}
+.stat b{display:block;font-size:1.6rem;font-weight:900;font-family:'Inter',sans-serif}
+.stat span{font-size:.78rem;color:var(--muted)}
+
+/* ---------- Buttons ---------- */
+.btn{
+  font-family:inherit;font-weight:800;cursor:pointer;border:none;border-radius:16px;
+  padding:15px 30px;font-size:1.02rem;transition:transform .2s,box-shadow .25s,filter .2s;
+  position:relative;overflow:hidden;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{
+  background:linear-gradient(120deg,#f7e3a1,#e9c46a 45%,#d4af37);
+  color:#221603;
+  box-shadow:0 18px 40px -18px rgba(233,196,106,.85),inset 0 1px 0 rgba(255,255,255,.6);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 26px 50px -20px rgba(233,196,106,.95)}
+.btn-primary::after{
+  content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:skewX(-22deg);animation:shine 3.4s infinite;
+}
+@keyframes shine{0%{left:-120%}45%{left:140%}100%{left:140%}}
+.btn-ghost{
+  background:rgba(255,255,255,.05);color:var(--txt);border:1px solid var(--stroke);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(233,196,106,.5)}
+.btn-translate{
+  font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;
+  background:linear-gradient(120deg,rgba(139,92,246,.25),rgba(45,212,191,.18));
+  border:1px solid rgba(139,92,246,.45);color:#dcd2ff;
+  border-radius:12px;padding:8px 14px;transition:all .2s;white-space:nowrap;
+}
+.btn-translate:hover{transform:translateY(-2px);border-color:rgba(233,196,106,.7);color:#fff5d8}
+.btn-translate.on{background:linear-gradient(120deg,rgba(233,196,106,.3),rgba(233,196,106,.12));border-color:rgba(233,196,106,.65);color:#ffeab4}
+
+/* ---------- Quiz bar ---------- */
+.quizbar{
+  display:flex;align-items:center;gap:16px;margin-bottom:20px;
+  background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+  border:1px solid var(--stroke);border-radius:18px;padding:12px 18px;
+  backdrop-filter:blur(12px);
+}
+.qb-info{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.88rem;white-space:nowrap}
+.qb-avatar{
+  width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.9rem;font-weight:900;
+  background:linear-gradient(140deg,#e9c46a,#b45309);color:#1a1200;
+}
+.qb-track{flex:1;height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;min-width:60px}
+.qb-fill{height:100%;width:0;border-radius:999px;transition:width .45s cubic-bezier(.4,1.3,.5,1);
+  background:linear-gradient(90deg,#8b5cf6,#e9c46a);box-shadow:0 0 16px rgba(233,196,106,.6)}
+.qb-count{font-family:'Inter',sans-serif;font-weight:700;font-size:.85rem;color:#e6dcff;white-space:nowrap}
+
+/* ---------- Question ---------- */
+.q-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.badge{
+  font-size:.76rem;font-weight:800;padding:6px 14px;border-radius:999px;
+  background:linear-gradient(120deg,rgba(139,92,246,.28),rgba(139,92,246,.08));
+  border:1px solid rgba(139,92,246,.45);color:#ddd3ff;
+}
+.q-num{font-size:.82rem;color:var(--muted);font-weight:700}
+.score-chip{
+  margin-inline-start:auto;font-size:.8rem;font-weight:800;padding:6px 13px;border-radius:999px;
+  background:linear-gradient(120deg,rgba(233,196,106,.2),rgba(233,196,106,.05));
+  border:1px solid rgba(233,196,106,.4);color:#ffe6a8;font-family:'Inter',sans-serif;
+}
+.q-en{
+  font-family:'Inter',sans-serif;font-size:clamp(1.05rem,2.4vw,1.32rem);font-weight:600;
+  line-height:1.65;color:#ffffff;letter-spacing:.1px;
+}
+.q-ar{
+  display:none;margin-top:14px;padding:14px 16px;border-radius:14px;
+  background:linear-gradient(120deg,rgba(233,196,106,.13),rgba(233,196,106,.04));
+  border:1px solid rgba(233,196,106,.28);
+  color:#ffeec2;font-size:.98rem;font-weight:600;
+}
+.show-tr .q-ar{display:block;animation:fadeUp .35s ease both}
+.q-tools{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+
+.options{display:grid;gap:12px;margin-top:18px}
+.option{
+  display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;direction:ltr;
+  padding:15px 18px;border-radius:18px;cursor:pointer;font-family:inherit;
+  background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  border:1px solid var(--stroke);color:#efeaff;font-size:1rem;
+  transition:transform .18s,border-color .2s,background .2s,box-shadow .2s;
+}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:rgba(233,196,106,.55);box-shadow:0 16px 34px -22px rgba(233,196,106,.9)}
+.option:disabled{cursor:default}
+.letter{
+  flex:0 0 34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(150deg,rgba(233,196,106,.22),rgba(233,196,106,.05));
+  border:1px solid rgba(233,196,106,.32);color:#f4dfa4;font-weight:800;font-family:'Inter',sans-serif;font-size:.9rem;
+}
+.opt-text{flex:1;display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.opt-en{font-family:'Inter',sans-serif;font-size:.98rem;line-height:1.6}
+.opt-ar{display:none;direction:rtl;text-align:right;font-size:.88rem;color:#bfe9dd;font-weight:600;
+  border-right:2px solid rgba(45,212,191,.5);padding-right:10px}
+.show-tr .opt-ar{display:block;animation:fadeUp .3s ease both}
+.option.correct{
+  border-color:rgba(52,211,153,.75);
+  background:linear-gradient(165deg,rgba(16,185,129,.22),rgba(16,185,129,.05));
+  box-shadow:0 0 0 1px rgba(52,211,153,.35),0 20px 40px -26px rgba(52,211,153,.9);
+}
+.option.correct .letter{background:linear-gradient(150deg,#34d399,#0f766e);color:#04150f;border-color:transparent}
+.option.wrong{
+  border-color:rgba(248,113,113,.7);
+  background:linear-gradient(165deg,rgba(239,68,68,.2),rgba(239,68,68,.05));
+  animation:shake .42s;
+}
+.option.wrong .letter{background:linear-gradient(150deg,#f87171,#991b1b);color:#1a0505;border-color:transparent}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+
+/* ---------- Feedback ---------- */
+.feedback{margin-top:20px;border-radius:18px;padding:0;font-weight:800;font-size:1.05rem;overflow:hidden;
+  max-height:0;opacity:0;transition:max-height .4s ease,opacity .3s ease,padding .3s ease}
+.feedback.show{max-height:220px;opacity:1;padding:16px 20px}
+.feedback.ok{
+  background:linear-gradient(120deg,rgba(52,211,153,.22),rgba(45,212,191,.08));
+  border:1px solid rgba(52,211,153,.5);color:#c8ffe9;
+}
+.feedback.no{
+  background:linear-gradient(120deg,rgba(248,113,113,.2),rgba(248,113,113,.05));
+  border:1px solid rgba(248,113,113,.5);color:#ffd6d6;
+}
+.feedback small{display:block;font-weight:600;font-size:.86rem;opacity:.85;margin-top:4px}
+.q-footer{margin-top:22px;display:flex;justify-content:center}
+
+/* ---------- Pop ---------- */
+.pop{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:90;opacity:0;transition:opacity .25s}
+.pop.show{opacity:1}
+.pop .inner{
+  font-size:clamp(1.3rem,4.4vw,2.3rem);font-weight:900;padding:22px 40px;border-radius:24px;
+  background:linear-gradient(140deg,rgba(20,12,40,.92),rgba(45,22,70,.9));
+  border:1.5px solid rgba(233,196,106,.65);
+  box-shadow:0 0 0 8px rgba(233,196,106,.08),0 40px 90px -30px rgba(233,196,106,.6);
+  transform:scale(.85);transition:transform .35s cubic-bezier(.3,1.6,.5,1);
+  text-align:center;
+}
+.pop.show .inner{transform:scale(1)}
+
+/* ---------- Results ---------- */
+.result-head{text-align:center;padding:34px 24px;position:relative;overflow:hidden}
+.result-head::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(233,196,106,.18),transparent 65%);pointer-events:none}
+.ring{
+  width:180px;height:180px;border-radius:50%;margin:6px auto 18px;display:grid;place-items:center;
+  background:conic-gradient(#e9c46a calc(var(--p,0)*1%),rgba(255,255,255,.08) 0);
+  position:relative;z-index:1;
+  box-shadow:0 0 60px -10px rgba(233,196,106,.55);
+}
+.ring-in{
+  width:150px;height:150px;border-radius:50%;background:#0b0718;display:grid;place-items:center;text-align:center;
+  border:1px solid rgba(255,255,255,.07);
+}
+.ring-in b{font-family:'Inter',sans-serif;font-size:2.3rem;font-weight:800;display:block;line-height:1.1}
+.ring-in small{font-size:.72rem;color:var(--muted);font-weight:700}
+.result-title{font-size:clamp(1.4rem,4vw,2.1rem);font-weight:900;position:relative;z-index:1}
+.result-sub{color:var(--muted);margin-top:8px;position:relative;z-index:1;font-size:.98rem}
+
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.sum-card{border-radius:18px;padding:16px;text-align:center;border:1px solid var(--stroke);
+  background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.012))}
+.sum-card b{display:block;font-family:'Inter',sans-serif;font-size:1.7rem;font-weight:800}
+.sum-card span{font-size:.78rem;color:var(--muted)}
+.sum-card.g b{color:#6ee7b7}.sum-card.a b{color:#fbbf24}.sum-card.r b{color:#fca5a5}
+
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:6px 0 26px}
+.res-list{display:grid;gap:14px}
+.res-item{
+  border-radius:20px;padding:18px 20px;border:1px solid var(--stroke);
+  background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.012));
+  transition:border-color .2s,transform .2s;
+}
+.res-item:hover{transform:translateY(-2px)}
+.res-item.good{border-color:rgba(52,211,153,.35)}
+.res-item.retry{border-color:rgba(251,191,36,.4)}
+.res-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.res-num{
+  flex:0 0 32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;
+  font-family:'Inter',sans-serif;font-size:.85rem;background:rgba(255,255,255,.07);border:1px solid var(--stroke);
+}
+.res-item.good .res-num{background:linear-gradient(150deg,rgba(52,211,153,.3),rgba(52,211,153,.08));border-color:rgba(52,211,153,.45);color:#c8ffe9}
+.res-item.retry .res-num{background:linear-gradient(150deg,rgba(251,191,36,.3),rgba(251,191,36,.08));border-color:rgba(251,191,36,.45);color:#ffe8b8}
+.res-q{font-family:'Inter',sans-serif;font-size:.95rem;direction:ltr;text-align:left;flex:1;min-width:180px;line-height:1.55;padding-top:3px}
+.res-tag{font-size:.72rem;font-weight:800;padding:5px 11px;border-radius:999px;white-space:nowrap}
+.res-item.good .res-tag{background:rgba(52,211,153,.16);color:#a7f3d0;border:1px solid rgba(52,211,153,.4)}
+.res-item.retry .res-tag{background:rgba(251,191,36,.16);color:#fde68a;border:1px solid rgba(251,191,36,.4)}
+.res-ar{display:none;margin-top:10px;font-size:.9rem;color:#ffeec2;font-weight:600;
+  background:rgba(233,196,106,.08);border-radius:12px;padding:10px 14px;border:1px solid rgba(233,196,106,.2)}
+.res-item.show-ar .res-ar{display:block;animation:fadeUp .3s both}
+.res-ans{margin-top:12px;display:grid;gap:8px}
+.ans{font-size:.88rem;border-radius:12px;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.ans b{font-weight:800;white-space:nowrap}
+.ans .v{font-family:'Inter',sans-serif;direction:ltr;text-align:left}
+.ans.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#b7f7dd}
+.ans.bad{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.32);color:#ffd0d0}
+.res-tools{display:flex;justify-content:flex-end;margin-top:10px}
+
+/* ---------- Footer ---------- */
+.foot{text-align:center;padding:30px 16px 50px;color:#6f668c;font-size:.82rem}
+.foot b{color:#c9a227}
+
+@media(max-width:640px){
+  .wrap{padding:16px 12px 70px}
+  .card{padding:20px 16px;border-radius:22px}
+  .hero{padding:26px 18px}
+  .stat-row{grid-template-columns:1fr;gap:10px}
+  .summary{grid-template-columns:1fr}
+  .quizbar{padding:10px 12px;gap:10px;font-size:.8rem}
+  .qb-info span:not(.qb-avatar){display:none}
+  .option{padding:13px 14px}
+  .btn{padding:13px 22px;font-size:.95rem}
+  .ring{width:150px;height:150px}.ring-in{width:122px;height:122px}.ring-in b{font-size:1.9rem}
+}
+</style>
+</head>
+<body>
+
+<div class="aurora"><span class="a1"></span><span class="a2"></span><span class="a3"></span><span class="a4"></span></div>
+<div class="grid-overlay"></div>
+<canvas id="confetti"></canvas>
+<div class="pop" id="pop"><div class="inner" id="popInner"></div></div>
+
+<main>
+  <!-- ================= HOME ================= -->
+  <section id="screen-home" class="screen active">
+    <div class="wrap">
+      <div class="card hero">
+        <div class="sa-greet"><span class="flag">🇸🇦</span> السلام عليكم ورحمة الله وبركاته</div>
+        <h1>حياكِ الله يا <span class="gold-text">أبرار الحربي</span> 🌿<br>
+        مراجعة شابتر <span class="gold-text en">Single Linked List</span></h1>
+        <p class="sub">
+          يا هلا ويا مرحبا فيكِ يا أبرار! جهّزنا لكِ مراجعة تفاعلية كاملة على شابتر
+          <span class="en">Single Linked List</span> استعدادًا للكويز.
+          كل إجابة صحيحة فيها احتفال وتحفيز، وكل إجابة تحتاج تركيز أكثر نقول لكِ «حاولي مرة أخرى» 💪
+        </p>
+
+        <div class="stat-row">
+          <div class="stat"><b class="gold-text">57</b><span>سؤال تفاعلي</span></div>
+          <div class="stat"><b class="gold-text">20</b><span>صح أو خطأ</span></div>
+          <div class="stat"><b class="gold-text">37</b><span>اختيار من متعدد</span></div>
+        </div>
+
+        <button class="btn btn-primary" id="btnStart">✦ ابدأي المراجعة الآن ✦</button>
+        <p class="sub" style="margin-top:18px;font-size:.85rem">
+          بالتوفيق يا أبرار، ثقي في نفسكِ… إنتِ قدّها 💚
+        </p>
+      </div>
+      <p class="foot">أُعدّ هذا الموقع خصيصًا للطالبة <b>أبرار الحربي</b> — مراجعة شابتر <b>Single Linked List</b></p>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="screen-quiz" class="screen">
+    <div class="wrap wide">
+      <div class="quizbar">
+        <div class="qb-info"><span class="qb-avatar">أ</span><span>أبرار الحربي</span></div>
+        <div class="qb-track"><div class="qb-fill" id="qbFill"></div></div>
+        <div class="qb-count" id="qbCount">1 / 57</div>
+      </div>
+
+      <div class="card" id="qCard">
+        <div class="q-head">
+          <span class="badge" id="qType">صح أو خطأ</span>
+          <span class="q-num" id="qNum">السؤال 1</span>
+          <span class="score-chip" id="scoreChip">⭐ 0</span>
+        </div>
+
+        <div class="q-body">
+          <p class="q-en" id="qEn" dir="ltr"></p>
+          <p class="q-ar" id="qAr"></p>
+        </div>
+
+        <div class="q-tools">
+          <button class="btn-translate" id="btnTr">🌐 ترجم السؤال</button>
+        </div>
+
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+
+        <div class="q-footer">
+          <button class="btn btn-primary" id="btnNext" style="display:none">السؤال التالي ←</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULT ================= -->
+  <section id="screen-result" class="screen">
+    <div class="wrap">
+      <div class="card result-head">
+        <div class="ring" id="ring" style="--p:0">
+          <div class="ring-in"><div><b id="scorePct">0%</b><small>من أول محاولة</small></div></div>
+        </div>
+        <h2 class="result-title" id="resTitle">أحسنتِ يا أبرار!</h2>
+        <p class="result-sub" id="resSub"></p>
+
+        <div class="summary">
+          <div class="sum-card g"><b id="sumGood">0</b><span>صحيحة من أول محاولة</span></div>
+          <div class="sum-card a"><b id="sumRetry">0</b><span>بعد المحاولة مرة أخرى</span></div>
+          <div class="sum-card r"><b id="sumWrong">0</b><span>أخطأتِ فيها أول مرة</span></div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn btn-ghost" id="btnTrAll">🌐 ترجمة كل الأسئلة</button>
+          <button class="btn btn-primary" id="btnRestart">↻ إعادة المراجعة</button>
+        </div>
+      </div>
+
+      <h3 style="margin:26px 0 14px;font-size:1.15rem">📋 التقرير التفصيلي لجميع الأسئلة</h3>
+      <div class="res-list" id="resList"></div>
+
+      <p class="foot">تقرير نتيجة <b>أبرار الحربي</b> — شابتر <b>Single Linked List</b><br>بالتوفيق في الكويز 💚</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* =====================================================================
+   DATA — 57 Questions (20 True/False + 37 Multiple Choice)
+   ===================================================================== */
+const DATA = [
+/* ---------- TRUE / FALSE (1 - 20) ---------- */
+{tf:1,q:"A singly linked list is a linear data structure in which each node stores data and a pointer to the next node.",ar:"القائمة المترابطة الأحادية بنية بيانات خطية، تُخزّن فيها كل عقدة البيانات ومؤشّرًا إلى العقدة التالية.",a:0},
+{tf:1,q:"In a singly linked list, every node contains a pointer to both the next and the previous node.",ar:"في القائمة المترابطة الأحادية، تحتوي كل عقدة على مؤشّرين: مؤشّر للعقدة التالية ومؤشّر للعقدة السابقة.",a:1},
+{tf:1,q:"The next pointer of the last node in a singly linked list is set to NULL.",ar:"مؤشّر العقدة الأخيرة في القائمة الأحادية يُضبط على القيمة NULL.",a:0},
+{tf:1,q:"Inserting a new node at the beginning of a singly linked list requires traversing the entire list.",ar:"إدخال عقدة جديدة في بداية القائمة الأحادية يتطلّب المرور على القائمة كاملة.",a:1},
+{tf:1,q:"A singly linked list provides random access to any element in O(1) time.",ar:"توفّر القائمة الأحادية وصولًا عشوائيًا مباشرًا لأي عنصر بزمن O(1).",a:1},
+{tf:1,q:"The head pointer stores the address of the first node in the list.",ar:"مؤشّر الرأس (head) يحفظ عنوان العقدة الأولى في القائمة.",a:0},
+{tf:1,q:"Deleting a node from the middle of a singly linked list requires updating the next pointer of the previous node.",ar:"حذف عقدة من منتصف القائمة الأحادية يتطلّب تحديث مؤشّر العقدة السابقة لها.",a:0},
+{tf:1,q:"The size of a singly linked list is fixed at compile time.",ar:"حجم القائمة الأحادية ثابت ويُحدَّد وقت الترجمة (Compile time).",a:1},
+{tf:1,q:"A linked list uses extra memory per element for storing pointers compared to an array.",ar:"تستهلك القائمة المترابطة ذاكرة إضافية لكل عنصر لتخزين المؤشّرات مقارنة بالمصفوفة.",a:0},
+{tf:1,q:"Traversal in a singly linked list is possible in one direction only.",ar:"المرور (Traversal) في القائمة الأحادية ممكن في اتجاه واحد فقط.",a:0},
+{tf:1,q:"Inserting a node at the end of a singly linked list when only the head pointer is available takes O(1) time.",ar:"إدخال عقدة في نهاية القائمة الأحادية عند توفّر مؤشّر الرأس فقط يستغرق زمن O(1).",a:1},
+{tf:1,q:"A node in a singly linked list typically consists of a data field and a next pointer field.",ar:"تتكوّن العقدة في القائمة الأحادية عادةً من حقل البيانات وحقل المؤشّر إلى العقدة التالية.",a:0},
+{tf:1,q:"Searching for an element in an unsorted singly linked list of n nodes is O(n) in the worst case.",ar:"البحث عن عنصر في قائمة أحادية غير مرتّبة تحتوي n عقدة يستغرق O(n) في أسوأ الحالات.",a:0},
+{tf:1,q:"From a given node in a singly linked list, you can directly access the previous node.",ar:"من عقدة معيّنة في القائمة الأحادية يمكنك الوصول مباشرةً إلى العقدة السابقة.",a:1},
+{tf:1,q:"Nodes of a linked list are usually allocated dynamically at runtime.",ar:"عادةً ما تُخصَّص عقد القائمة المترابطة ديناميكيًا وقت التنفيذ.",a:0},
+{tf:1,q:"A singly linked list can be reversed in O(n) time using three pointers.",ar:"يمكن عكس القائمة الأحادية بزمن O(n) باستخدام ثلاثة مؤشّرات.",a:0},
+{tf:1,q:"In a singly linked list the next pointer of the tail node points back to the head node.",ar:"في القائمة الأحادية، مؤشّر العقدة الأخيرة يشير عائدًا إلى العقدة الأولى (الرأس).",a:1},
+{tf:1,q:"When the position is known, insertion and deletion in a linked list are more efficient than in an array.",ar:"عند معرفة الموضع، فإن الإدخال والحذف في القائمة المترابطة أكفأ من المصفوفة.",a:0},
+{tf:1,q:"The time complexity of inserting a node at the head of a singly linked list is O(n).",ar:"التعقيد الزمني لإدخال عقدة في مقدّمة القائمة الأحادية هو O(n).",a:1},
+{tf:1,q:"If the head pointer of a singly linked list is lost, the whole list becomes inaccessible.",ar:"إذا فُقد مؤشّر الرأس في القائمة الأحادية، تصبح القائمة كاملة غير قابلة للوصول.",a:0},
+
+/* ---------- MULTIPLE CHOICE (21 - 57) ---------- */
+{q:"What is a singly linked list?",ar:"ما هي القائمة المترابطة الأحادية؟",o:[
+ ["A linear data structure made of nodes, where each node stores data and a pointer to the next node","بنية بيانات خطية مكوّنة من عُقد، تخزّن كل عقدة بيانات ومؤشّرًا إلى العقدة التالية"],
+ ["A data structure that stores its elements in contiguous memory locations","بنية بيانات تخزّن عناصرها في مواقع ذاكرة متجاورة"],
+ ["A data structure in which each node contains two pointers (next and previous)","بنية بيانات تحتوي كل عقدة فيها على مؤشّرين (تالي وسابق)"],
+ ["A hierarchical data structure of parent and child nodes","بنية بيانات هرمية من عُقد أب وابن"]],a:0},
+
+{q:"Which of the following is NOT a component of a node in a singly linked list?",ar:"أيٌّ ممّا يلي ليس مكوّنًا من مكوّنات العقدة في القائمة الأحادية؟",o:[
+ ["Data field","حقل البيانات"],
+ ["Pointer to the next node","مؤشّر إلى العقدة التالية"],
+ ["Pointer to the previous node","مؤشّر إلى العقدة السابقة"],
+ ["Node identifier (an index number for the node)","معرّف العقدة (رقم فهرس للعقدة)"]],a:2},
+
+{q:"What is the time complexity of inserting a new node at the beginning of a singly linked list?",ar:"ما هو التعقيد الزمني لإدخال عقدة جديدة في بداية القائمة الأحادية؟",o:[
+ ["O(1)","O(1) — زمن ثابت"],
+ ["O(n)","O(n) — خطي"],
+ ["O(log n)","O(log n) — لوغاريتمي"],
+ ["O(n²)","O(n²) — تربيعي"]],a:0},
+
+{q:"What is the time complexity of deleting the first node of a singly linked list?",ar:"ما هو التعقيد الزمني لحذف العقدة الأولى من القائمة الأحادية؟",o:[
+ ["O(1)","O(1) — زمن ثابت"],
+ ["O(n)","O(n) — خطي"],
+ ["O(log n)","O(log n) — لوغاريتمي"],
+ ["O(n log n)","O(n log n)"]],a:0},
+
+{q:"To insert a new node after a node p in a singly linked list, which statements are correct?",ar:"لإدخال عقدة جديدة بعد العقدة p في القائمة الأحادية، أي العبارات صحيحة؟",o:[
+ ["newNode->next = p->next;  p->next = newNode;","نُسند للعقدة الجديدة مؤشّر التالية للعقدة p، ثم نجعل p تشير إلى العقدة الجديدة"],
+ ["p->next = newNode;  newNode->next = p->next;","نجعل p تشير إلى العقدة الجديدة أولًا ثم نُسند — ترتيب خاطئ يفقد بقية القائمة"],
+ ["newNode->next = p;  p->next = newNode;","هذا يجعل العقدة الجديدة تشير إلى p نفسها (حلقة خاطئة)"],
+ ["p->next = newNode->next;  newNode = p->next;","ترتيب غير صحيح ولا يحقّق الإدخال"]],a:0},
+
+{q:"What is the value of the next pointer of the last node in a singly linked list?",ar:"ما قيمة مؤشّر (next) في العقدة الأخيرة من القائمة الأحادية؟",o:[
+ ["NULL","القيمة NULL (لا شيء)"],
+ ["The address of the head node","عنوان عقدة الرأس"],
+ ["Its own address","عنوانها الخاص"],
+ ["A random garbage value","قيمة عشوائية غير محدّدة"]],a:0},
+
+{q:"What is the main advantage of a linked list over an array?",ar:"ما هي الميزة الأساسية للقائمة المترابطة مقارنة بالمصفوفة؟",o:[
+ ["Dynamic size with efficient insertion and deletion","الحجم الديناميكي مع كفاءة الإدخال والحذف"],
+ ["Faster random access to elements","وصول عشوائي أسرع للعناصر"],
+ ["It uses less memory per element","تستهلك ذاكرة أقل لكل عنصر"],
+ ["Its elements are stored contiguously","عناصرها مخزّنة في مواقع متجاورة"]],a:0},
+
+{q:"What is the main disadvantage of a singly linked list compared to an array?",ar:"ما هي العيب الأساسي للقائمة الأحادية مقارنة بالمصفوفة؟",o:[
+ ["No direct (random) access to elements — you must traverse","لا يوجد وصول مباشر (عشوائي) للعناصر — يجب المرور عليها"],
+ ["Its size is fixed","حجمها ثابت"],
+ ["Insertion is always O(n)","الإدخال دائمًا بزمن O(n)"],
+ ["It cannot store more than 100 elements","لا يمكنها تخزين أكثر من 100 عنصر"]],a:0},
+
+{q:"Given a pointer p to a node (not the last node), how do you delete the node that comes after p?",ar:"بمعرفة المؤشّر p لعقدة (ليست الأخيرة)، كيف تحذف العقدة التي تأتي بعدها؟",o:[
+ ["temp = p->next;  p->next = temp->next;  free(temp);","نحفظ العقدة التالية في temp، ثم نربط p بما بعدها، ثم نحرّر الذاكرة"],
+ ["p->next = p->next->next->next;","هذا يتخطّى عقدتين وليس عقدة واحدة"],
+ ["free(p->next);","تحرير بدون إعادة الربط يقطع السلسلة ويسبب فقدان بقية القائمة"],
+ ["temp = p;  p = p->next;  free(temp);","هذا يحذف العقدة p نفسها وليس التي بعدها"]],a:0},
+
+{q:"What happens if the head pointer of a singly linked list is lost?",ar:"ماذا يحدث إذا فُقد مؤشّر الرأس (head) في القائمة الأحادية؟",o:[
+ ["All nodes become unreachable (memory leak)","تصبح كل العقد غير قابلة للوصول (تسريب في الذاكرة)"],
+ ["Only the first node is lost","تُفقد العقدة الأولى فقط"],
+ ["The list is automatically reversed","تُعكس القائمة تلقائيًا"],
+ ["Nothing happens, the list can still be traversed","لا يحدث شيء، ويمكن المرور على القائمة"]],a:0},
+
+{q:"How many pointer fields does a node contain in a singly linked list?",ar:"كم عدد حقول المؤشّرات في عقدة القائمة الأحادية؟",o:[
+ ["One","واحد"],
+ ["Two","اثنان"],
+ ["Three","ثلاثة"],
+ ["None","لا يوجد"]],a:0},
+
+{q:"What is the worst-case time complexity of searching for a value in a singly linked list of n nodes?",ar:"ما هو أسوأ تعقيد زمني للبحث عن قيمة في قائمة أحادية تحتوي n عقدة؟",o:[
+ ["O(n)","O(n)"],
+ ["O(1)","O(1)"],
+ ["O(log n)","O(log n)"],
+ ["O(n log n)","O(n log n)"]],a:0},
+
+{q:"Which operation is inefficient (or not directly possible) in a singly linked list?",ar:"أي عملية غير كفؤة (أو غير ممكنة مباشرة) في القائمة الأحادية؟",o:[
+ ["Moving backwards / accessing the previous node","التحرّك للخلف / الوصول إلى العقدة السابقة"],
+ ["Inserting at the head","الإدخال في المقدّمة"],
+ ["Deleting the head","حذف العقدة الأولى"],
+ ["Traversing forward","المرور للأمام"]],a:0},
+
+{q:"Inserting a new node at the end of a singly linked list that has only a head pointer takes:",ar:"إدخال عقدة جديدة في نهاية قائمة أحادية لديها مؤشّر رأس (head) فقط يستغرق:",o:[
+ ["O(n)","O(n)"],
+ ["O(1)","O(1)"],
+ ["O(log n)","O(log n)"],
+ ["O(n²)","O(n²)"]],a:0},
+
+{q:"Which data structure is naturally implemented using a singly linked list with push and pop at the head?",ar:"أي بنية بيانات تُنفَّذ بشكل طبيعي باستخدام قائمة أحادية مع الإضافة والحذف من المقدّمة؟",o:[
+ ["Stack","المكدّس (Stack)"],
+ ["Queue","الطابور (Queue)"],
+ ["Binary tree","الشجرة الثنائية"],
+ ["Priority queue","طابور الأولوية"]],a:0},
+
+{q:"Which statement correctly allocates memory for a new node in C?",ar:"أي عبارة تخصّص الذاكرة بشكل صحيح لعقدة جديدة في لغة C؟",o:[
+ ["struct Node* n = (struct Node*)malloc(sizeof(struct Node));","تخصيص ذاكرة بحجم بنية العقدة بشكل صحيح"],
+ ["struct Node* n = (struct Node*)malloc(sizeof(struct Node*));","الحجم خاطئ — يخصّص حجم المؤشّر فقط"],
+ ["struct Node n = malloc(sizeof(struct Node));","خطأ: malloc تُعيد مؤشّرًا ولا يمكن إسنادها لبنية مباشرة"],
+ ["Node* n = malloc(sizeof(Node));","غير صحيحة في C بدون كلمة struct (أو بدون تحويل النوع)"]],a:0},
+
+{q:"In a singly linked list, what does the term \"head\" refer to?",ar:"في القائمة الأحادية، إلى ماذا يشير مصطلح «head» (الرأس)؟",o:[
+ ["A pointer to the first node in the list","مؤشّر إلى العقدة الأولى في القائمة"],
+ ["The last node in the list","العقدة الأخيرة في القائمة"],
+ ["The largest value in the list","أكبر قيمة في القائمة"],
+ ["A dummy node that stores the length","عقدة وهمية تخزّن الطول"]],a:0},
+
+{q:"If head == NULL, then the linked list is:",ar:"إذا كان head == NULL فإن القائمة المترابطة تكون:",o:[
+ ["Empty","فارغة"],
+ ["Full","ممتلئة"],
+ ["Circular","دائرية"],
+ ["Corrupted","تالفة"]],a:0},
+
+{q:"What does counting the number of nodes in a singly linked list require?",ar:"ما الذي يتطلّبه عدّ عدد العُقد في القائمة الأحادية؟",o:[
+ ["A full traversal from head to tail — O(n)","المرور الكامل من الرأس إلى الذيل — بزمن O(n)"],
+ ["O(1) time if the head is known","زمن O(1) إذا كان الرأس معروفًا"],
+ ["Random access to each index","وصول عشوائي لكل فهرس"],
+ ["Binary search","البحث الثنائي"]],a:0},
+
+{q:"Which three pointers are typically used to reverse a singly linked list iteratively?",ar:"أي ثلاثة مؤشّرات تُستخدم عادةً لعكس القائمة الأحادية بطريقة تكرارية؟",o:[
+ ["prev, curr, next","prev و curr و next"],
+ ["head, tail, mid","head و tail و mid"],
+ ["first, last, temp","first و last و temp"],
+ ["left, right, pivot","left و right و pivot"]],a:0},
+
+{q:"What is the space complexity of a singly linked list that stores n elements?",ar:"ما هو التعقيد المكاني لقائمة أحادية تخزّن n عنصرًا؟",o:[
+ ["O(n)","O(n)"],
+ ["O(1)","O(1)"],
+ ["O(log n)","O(log n)"],
+ ["O(n²)","O(n²)"]],a:0},
+
+{q:"To insert a new node at position i in a singly linked list, you must first:",ar:"لإدخال عقدة جديدة في الموضع i في القائمة الأحادية، يجب أولًا:",o:[
+ ["Traverse to the node at position i-1","المرور حتى العقدة التي في الموضع i-1"],
+ ["Traverse to the node at position i","المرور حتى العقدة التي في الموضع i"],
+ ["Access the element directly using an index","الوصول للعنصر مباشرةً باستخدام الفهرس"],
+ ["Sort the list","ترتيب القائمة"]],a:0},
+
+{q:"Which of the following is NOT possible in a singly linked list?",ar:"أيٌّ ممّا يلي غير ممكن في القائمة الأحادية؟",o:[
+ ["Accessing the k-th element directly in O(1)","الوصول إلى العنصر رقم k مباشرةً بزمن O(1)"],
+ ["Inserting a node at the head","إدخال عقدة في المقدّمة"],
+ ["Traversing all nodes forward","المرور على كل العُقد للأمام"],
+ ["Deleting the head node","حذف العقدة الأولى"]],a:0},
+
+{q:"If you are given only a pointer to a node that is NOT the last node, how can you delete it?",ar:"إذا أُعطيت فقط مؤشّرًا لعقدة ليست الأخيرة، كيف يمكنك حذفها؟",o:[
+ ["Copy the data of the next node into it, then delete the next node","ننسخ بيانات العقدة التالية إليها، ثم نحذف العقدة التالية"],
+ ["Free the node directly and set it to NULL","نحرّر العقدة مباشرةً ونجعلها NULL"],
+ ["Set the node's next pointer to NULL","نجعل مؤشّر التالي للعقدة NULL"],
+ ["It is impossible","هذا مستحيل"]],a:0},
+
+{q:"How is memory for linked list nodes usually allocated?",ar:"كيف تُخصَّص الذاكرة لعُقد القائمة المترابطة عادةً؟",o:[
+ ["Dynamically at runtime","ديناميكيًا وقت التنفيذ"],
+ ["Statically on the stack at compile time","ثابتًا على المكدّس وقت الترجمة"],
+ ["In a contiguous block on the stack","في كتلة متجاورة على المكدّس"],
+ ["It is not allocated at all","لا تُخصَّص إطلاقًا"]],a:0},
+
+{q:"Which technique finds the middle node of a singly linked list in one pass?",ar:"أي تقنية تجد العقدة الوسطى في القائمة الأحادية بمرور واحد؟",o:[
+ ["Slow and fast pointers","مؤشّر بطيء ومؤشّر سريع"],
+ ["Binary search","البحث الثنائي"],
+ ["Recursion with an index","الاستدعاء الذاتي مع فهرس"],
+ ["Hashing","التجزئة (Hashing)"]],a:0},
+
+{q:"Which algorithm detects a loop (cycle) in a singly linked list?",ar:"أي خوارزمية تكشف وجود حلقة (loop) في القائمة الأحادية؟",o:[
+ ["Floyd's cycle detection (tortoise and hare)","خوارزمية فلويد لكشف الحلقات (السلحفاة والأرنب)"],
+ ["Dijkstra's algorithm","خوارزمية دايكسترا"],
+ ["Binary search","البحث الثنائي"],
+ ["Kruskal's algorithm","خوارزمية كروسكال"]],a:0},
+
+{q:"Merging two sorted singly linked lists of sizes n and m takes:",ar:"دمج قائمتين أحاديتين مرتّبتين بحجم n و m يستغرق:",o:[
+ ["O(n + m)","O(n + m)"],
+ ["O(1)","O(1)"],
+ ["O(n × m)","O(n × m)"],
+ ["O(log n + log m)","O(log n + log m)"]],a:0},
+
+{q:"Which of the following is a valid self-referential structure for a singly linked list node in C?",ar:"أيٌّ ممّا يلي بنية ذاتية المرجع صحيحة لعقدة قائمة أحادية في لغة C؟",o:[
+ ["struct Node { int data; struct Node* next; };","بنية تحتوي بيانات ومؤشّرًا لنفس نوع البنية"],
+ ["struct Node { int data; struct Node next; };","خطأ: لا يمكن تضمين البنية داخل نفسها"],
+ ["struct Node { int data; int next; };","خطأ: التالي يجب أن يكون مؤشّرًا لا عددًا صحيحًا"],
+ ["struct Node { struct Node* next; };","صحيحة نحويًا لكنها بدون حقل البيانات"]],a:0},
+
+{q:"Which is the correct order of statements to insert a new node at the head?",ar:"ما الترتيب الصحيح للتعليمات لإدخال عقدة جديدة في المقدّمة (الرأس)؟",o:[
+ ["newNode->next = head;  head = newNode;","نربط العقدة الجديدة بالرأس الحالي، ثم نجعل الرأس هو العقدة الجديدة"],
+ ["head = newNode;  newNode->next = head;","ترتيب خاطئ يجعل العقدة تشير إلى نفسها"],
+ ["newNode = head;  head = newNode->next;","هذا فقد للعقدة الجديدة ولم يُدخلها"],
+ ["head->next = newNode;  newNode->next = NULL;","هذا يُدخل بعد الرأس وليس في المقدّمة"]],a:0},
+
+{q:"How can you print the elements of a singly linked list in reverse order?",ar:"كيف يمكنك طباعة عناصر القائمة الأحادية بترتيب معاكس؟",o:[
+ ["Using recursion or a stack","باستخدام الاستدعاء الذاتي أو المكدّس"],
+ ["Simply traversing from the head once","بالمرور من الرأس مرة واحدة فقط"],
+ ["Using a direct index from the tail","باستخدام فهرس مباشر من الذيل"],
+ ["It is impossible","هذا مستحيل"]],a:0},
+
+{q:"What is the length of a singly linked list when head == NULL?",ar:"ما هو طول القائمة الأحادية عندما head == NULL؟",o:[
+ ["0","صفر"],
+ ["1","واحد"],
+ ["Undefined","غير معرّف"],
+ ["-1","سالب واحد"]],a:0},
+
+{q:"Deleting the last node of a singly linked list (given only head) requires:",ar:"حذف العقدة الأخيرة من القائمة الأحادية (بوجود head فقط) يتطلّب:",o:[
+ ["Traversing to the second-to-last node — O(n)","المرور حتى العقدة قبل الأخيرة — بزمن O(n)"],
+ ["O(1) time using the head pointer","زمن O(1) باستخدام مؤشّر الرأس"],
+ ["Random access to the last index","وصولًا عشوائيًا للفهرس الأخير"],
+ ["Reversing the list","عكس القائمة"]],a:0},
+
+{q:"Which statement about memory in a singly linked list is FALSE?",ar:"أي عبارة عن الذاكرة في القائمة الأحادية غير صحيحة؟",o:[
+ ["Elements are stored in contiguous memory locations","العناصر مخزّنة في مواقع ذاكرة متجاورة"],
+ ["Each node is allocated separately","كل عقدة تُخصَّص منفصلة عن الأخرى"],
+ ["A pointer is stored with each element","يُخزَّن مؤشّر مع كل عنصر"],
+ ["Nodes can be scattered in memory","يمكن أن تكون العُقد موزّعة في الذاكرة"]],a:0},
+
+{q:"What happens when you insert into a singly linked list that is \"full\"?",ar:"ماذا يحدث عند الإدخال في قائمة أحادية «ممتلئة»؟",o:[
+ ["It never becomes full; it grows until memory runs out","لا تصبح ممتلئة أبدًا؛ تنمو حتى تنفد الذاكرة"],
+ ["It throws an overflow error immediately","تُطلق خطأ تجاوز فورًا"],
+ ["It doubles its fixed capacity","تُضاعف سعتها الثابتة"],
+ ["It overwrites the head node","تستبدل عقدة الرأس"]],a:0},
+
+{q:"Which traversal order does a singly linked list naturally support?",ar:"ما ترتيب المرور الذي تدعمه القائمة الأحادية بشكل طبيعي؟",o:[
+ ["Forward only, from head to tail","الأمام فقط، من الرأس إلى الذيل"],
+ ["Forward and backward","الأمام والخلف"],
+ ["Random access order","ترتيب الوصول العشوائي"],
+ ["Sorted order automatically","ترتيب مرتّب تلقائيًا"]],a:0},
+
+{q:"Which of the following best describes the relationship between nodes in a singly linked list?",ar:"أيٌّ ممّا يلي يصف علاقة العُقد في القائمة الأحادية بأفضل شكل؟",o:[
+ ["Each node is linked to its successor through a pointer","كل عقدة مرتبطة بالعقدة التي تليها عبر مؤشّر"],
+ ["Nodes are indexed by their memory address","العُقد مفهرسة حسب عنوان الذاكنة"],
+ ["Each node is linked to its predecessor and successor","كل عقدة مرتبطة بسابقتها وتاليتها"],
+ ["Nodes are linked in a tree structure","العُقد مرتبطة في بنية شجرية"]],a:0}
+];
+
+/* =====================================================================
+   SETUP
+   ===================================================================== */
+const TF_OPTS = [["True","صحيح"],["False","خطأ"]];
+const QUESTIONS = DATA.map((d,i)=>({
+  n:i+1,
+  type: d.tf ? 'tf' : 'mc',
+  q: d.q,
+  ar: d.ar,
+  opts: d.tf ? TF_OPTS : d.o,
+  a: d.a
+}));
+const LETTERS = "ABCDEF";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+const state = { idx:0, score:0, attempts:0, wrongPicks:[], records:[], answered:false };
+
+/* =====================================================================
+   SOUND ENGINE (Web Audio API)
+   ===================================================================== */
+let AC = null;
+function ac(){
+  if(!AC){ try{ AC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(AC.state === 'suspended'){ AC.resume(); }
+  return AC;
+}
+function tone(freq, delay, dur, type='sine', vol=0.16){
+  const c = ac(); if(!c) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.value = freq;
+  o.connect(g); g.connect(c.destination);
+  const t0 = c.currentTime + delay;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.start(t0); o.stop(t0 + dur + 0.06);
+}
+function playCorrect(){
+  [523.25, 659.25, 783.99, 1046.50].forEach((f,i)=>tone(f, i*0.085, 0.34, 'triangle', 0.15));
+  tone(1318.51, 0.34, 0.5, 'sine', 0.09);
+}
+function playWrong(){
+  tone(196.00, 0, 0.22, 'sawtooth', 0.09);
+  tone(155.56, 0.15, 0.30, 'sawtooth', 0.09);
+}
+function playClick(){ tone(720, 0, 0.05, 'sine', 0.045); }
+function playFinish(){
+  const seq = [[523.25,0],[659.25,0.12],[783.99,0.24],[1046.50,0.36],[783.99,0.5],[1046.50,0.62],[1318.51,0.76]];
+  seq.forEach(([f,d])=>tone(f, d, 0.42, 'triangle', 0.16));
+  tone(261.63, 0.9, 1.2, 'sine', 0.09);
+}
+
+/* =====================================================================
+   CONFETTI
+   ===================================================================== */
+const cv = document.getElementById('confetti');
+const cctx = cv.getContext('2d');
+let parts = [], running = false;
+const COLORS = ['#e9c46a','#f7e3a1','#8b5cf6','#f472b6','#2dd4bf','#34d399','#ffffff','#ffb703'];
+function sizeCanvas(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = window.innerWidth * dpr;
+  cv.height = window.innerHeight * dpr;
+  cctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize', sizeCanvas);
+sizeCanvas();
+
+function spawn(x, y, n, spread){
+  const W = window.innerWidth, H = window.innerHeight;
+  for(let i=0;i<n;i++){
+    const ang = spread ? (Math.random()*Math.PI*2) : (Math.PI/2 + (Math.random()-0.5)*1.4);
+    const sp = spread ? (2 + Math.random()*8) : (1.5 + Math.random()*3);
+    parts.push({
+      x: x !== null ? x : Math.random()*W,
+      y: y !== null ? y : -20 - Math.random()*H*0.25,
+      vx: Math.cos(ang)*sp,
+      vy: spread ? Math.sin(ang)*sp : Math.abs(Math.sin(ang)*sp) + 1,
+      s: 5 + Math.random()*8,
+      rot: Math.random()*Math.PI*2,
+      vr: (Math.random()-0.5)*0.3,
+      color: COLORS[(Math.random()*COLORS.length)|0],
+      life: 1,
+      fade: spread ? 0.008 : 0.006
+    });
+  }
+  if(!running){ running = true; requestAnimationFrame(loop); }
+}
+function loop(){
+  const W = window.innerWidth, H = window.innerHeight;
+  cctx.clearRect(0,0,W,H);
+  parts = parts.filter(p => p.life > 0 && p.y < H + 60);
+  for(const p of parts){
+    p.vy += 0.16;
+    p.vx *= 0.992;
+    p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.fade;
+    cctx.save();
+    cctx.translate(p.x, p.y);
+    cctx.rotate(p.rot);
+    cctx.globalAlpha = Math.max(0, Math.min(1, p.life*1.5));
+    cctx.fillStyle = p.color;
+    cctx.fillRect(-p.s/2, -p.s/3, p.s, p.s*0.62);
+    cctx.restore();
+  }
+  if(parts.length){ requestAnimationFrame(loop); } else { running = false; cctx.clearRect(0,0,W,H); }
+}
+function celebrate(){
+  spawn(window.innerWidth/2, window.innerHeight*0.42, 110, true);
+  setTimeout(()=>spawn(null, null, 70, false), 130);
+}
+function bigCelebrate(){
+  spawn(window.innerWidth/2, window.innerHeight*0.45, 150, true);
+  setTimeout(()=>spawn(null, null, 110, false), 180);
+  setTimeout(()=>spawn(null, null, 90, false), 520);
+}
+
+/* =====================================================================
+   POPUP
+   ===================================================================== */
+const pop = $('#pop'), popInner = $('#popInner');
+let popTimer = null;
+function showPop(text){
+  popInner.textContent = text;
+  pop.classList.add('show');
+  clearTimeout(popTimer);
+  popTimer = setTimeout(()=>pop.classList.remove('show'), 1500);
+}
+
+/* =====================================================================
+   QUIZ LOGIC
+   ===================================================================== */
+const PRAISE = [
+  "أحسنتِ يا أبرار، أكملي! 🌟",
+  "ما شاء الله عليكِ يا أبرار! 💫",
+  "رائعة يا أبرار، أكملي! ✨",
+  "إجابة مثالية يا أبرار! 👏",
+  "يا سلام عليكِ يا أبرار! 🏆",
+  "ممتازة يا أبرار، استمري! 🚀"
+];
+const RETRY_MSGS = [
+  "حاولي مرة أخرى 🌱",
+  "لا بأس يا أبرار، حاولي مرة أخرى 💪",
+  "قريبة جدًا! حاولي مرة أخرى 🌸",
+  "ركّزي شوي يا أبرار، حاولي مرة أخرى 🔎"
+];
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateBar(){
+  $('#qbFill').style.width = (state.idx / QUESTIONS.length * 100) + '%';
+  $('#qbCount').textContent = (state.idx + 1) + ' / ' + QUESTIONS.length;
+  $('#scoreChip').textContent = '⭐ ' + state.score;
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[state.idx];
+  state.answered = false;
+  state.attempts = 0;
+  state.wrongPicks = [];
+
+  $('#qCard').classList.remove('show-tr');
+  $('#btnTr').classList.remove('on');
+  $('#btnTr').textContent = '🌐 ترجم السؤال';
+
+  $('#qType').textContent = q.type === 'tf' ? 'صح أو خطأ' : 'اختيار من متعدد';
+  $('#qNum').textContent = 'السؤال ' + q.n;
+  $('#qEn').textContent = q.q;
+  $('#qAr').textContent = q.ar;
+
+  const box = $('#options');
+  box.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'option';
+    b.dataset.i = i;
+    b.innerHTML = '<span class="letter">' + LETTERS[i] + '</span>' +
+      '<span class="opt-text"><span class="opt-en" dir="ltr">' + esc(o[0]) + '</span>' +
+      '<span class="opt-ar" dir="rtl">' + esc(o[1]) + '</span></span>';
+    b.addEventListener('click', () => choose(i, b));
+    box.appendChild(b);
+  });
+
+  const fb = $('#feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  const btnNext = $('#btnNext');
+  btnNext.style.display = 'none';
+  btnNext.textContent = (state.idx === QUESTIONS.length - 1) ? 'عرض النتيجة 🏆' : 'السؤال التالي ←';
+
+  updateBar();
+}
+
+function choose(i, btn){
+  if(state.answered || btn.disabled) return;
+  const q = QUESTIONS[state.idx];
+
+  if(i === q.a){
+    state.answered = true;
+    btn.classList.add('correct');
+    document.querySelectorAll('.option').forEach(o => o.disabled = true);
+
+    const firstTry = state.attempts === 0;
+    state.records[state.idx] = {
+      firstTry: firstTry,
+      wrongPicks: state.wrongPicks.slice(),
+      tries: state.attempts + 1
+    };
+    if(firstTry) state.score++;
+
+    playCorrect();
+    celebrate();
+    const msg = PRAISE[(Math.random()*PRAISE.length)|0];
+    showPop(firstTry ? msg : "أحسنتِ يا أبرار، أكملي! 🌟");
+
+    const fb = $('#feedback');
+    fb.className = 'feedback ok show';
+    fb.innerHTML = (firstTry ? msg : "أحسنتِ يا أبرار، أكملي! 🌟") +
+      '<small>إجابة صحيحة' + (firstTry ? ' من المحاولة الأولى — ممتاز! 🎉' : ' بعد المحاولة مرة أخرى — استمري! 💚') + '</small>';
+
+    $('#btnNext').style.display = 'inline-block';
+    updateBar();
+  } else {
+    state.attempts++;
+    state.wrongPicks.push(i);
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    playWrong();
+    const fb = $('#feedback');
+    fb.className = 'feedback no show';
+    fb.innerHTML = RETRY_MSGS[(Math.random()*RETRY_MSGS.length)|0] +
+      '<small>لا تستسلمي يا أبرار، إنتِ قادرة 💪</small>';
+  }
+}
+
+$('#btnNext').addEventListener('click', () => {
+  playClick();
+  if(state.idx === QUESTIONS.length - 1){
+    finish();
+  } else {
+    state.idx++;
+    renderQuestion();
+  }
+});
+
+/* =====================================================================
+   TRANSLATE TOGGLES
+   ===================================================================== */
+$('#btnTr').addEventListener('click', () => {
+  const card = $('#qCard');
+  card.classList.toggle('show-tr');
+  const on = card.classList.contains('show-tr');
+  $('#btnTr').classList.toggle('on', on);
+  $('#btnTr').textContent = on ? '🌐 إخفاء الترجمة' : '🌐 ترجم السؤال';
+  playClick();
+});
+
+/* =====================================================================
+   FINISH & REPORT
+   ===================================================================== */
+function finish(){
+  showScreen('screen-result');
+  const total = QUESTIONS.length;
+  const first = state.score;
+  const pct = Math.round(first / total * 100);
+
+  // animated ring
+  const ring = $('#ring');
+  let start = null;
+  function animateRing(ts){
+    if(!start) start = ts;
+    const p = Math.min((ts - start) / 950, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    ring.style.setProperty('--p', (pct * eased).toFixed(1));
+    $('#scorePct').textContent = Math.round(pct * eased) + '%';
+    if(p < 1) requestAnimationFrame(animateRing);
+  }
+  requestAnimationFrame(animateRing);
+
+  let retryCount = 0, wrongFirst = 0;
+  state.records.forEach(r => { if(r){ if(!r.firstTry) retryCount++; } });
+  state.records.forEach(r => { if(r && !r.firstTry) wrongFirst++; });
+
+  $('#sumGood').textContent = first;
+  $('#sumRetry').textContent = retryCount;
+  $('#sumWrong').textContent = wrongFirst;
+
+  let title, sub;
+  if(pct >= 90){ title = 'ما شاء الله! نتيجة مبهرة يا أبرار 🏆'; sub = 'مستواكِ ممتاز في شابتر Single Linked List — بالتوفيق في الكويز، إنتِ جاهزة! 💚'; }
+  else if(pct >= 75){ title = 'أحسنتِ يا أبرار! نتيجة قوية 🌟'; sub = 'مستواكِ جيد جدًا، راجعي الأسئلة التي احتجتِ فيها محاولة إضافية وستكونين ممتازة.'; }
+  else if(pct >= 50){ title = 'خطوة جيدة يا أبرار، أكملي 💪'; sub = 'ركّزي على الأساسيات: الإدخال والحذف والمرور والتعقيد الزمني، ثم أعيدي المراجعة.'; }
+  else { title = 'لا بأس يا أبرار، البداية دائمًا صعبة 🌱'; sub = 'خذي وقتكِ في مراجعة الإجابات النموذجية بالأسفل، ثم أعيدي المراجعة من جديد — إنتِ تقدرين!'; }
+  $('#resTitle').textContent = title;
+  $('#resSub').textContent = sub + '  (النتيجة: ' + first + ' من ' + total + ')';
+
+  // build report
+  const list = $('#resList');
+  list.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const rec = state.records[i] || { firstTry:false, wrongPicks:[], tries:0 };
+    const div = document.createElement('div');
+    div.className = 'res-item ' + (rec.firstTry ? 'good' : 'retry');
+
+    let wrongHtml = '';
+    if(!rec.firstTry && rec.wrongPicks.length){
+      const wp = rec.wrongPicks.map(x => LETTERS[x] + ') ' + esc(q.opts[x][0])).join('  |  ');
+      wrongHtml = '<div class="ans bad"><b>إجابتك أول مرة:</b> <span class="v">' + wp + '</span></div>';
+    }
+
+    div.innerHTML =
+      '<div class="res-head">' +
+        '<span class="res-num">' + q.n + '</span>' +
+        '<span class="res-q" dir="ltr">' + esc(q.q) + '</span>' +
+        '<span class="res-tag">' + (rec.firstTry ? '✔ من أول محاولة' : '↻ بعد إعادة المحاولة') + '</span>' +
+      '</div>' +
+      '<div class="res-ar">' + esc(q.ar) + '</div>' +
+      '<div class="res-ans">' +
+        '<div class="ans ok"><b>الإجابة النموذجية:</b> <span class="v">' + LETTERS[q.a] + ') ' + esc(q.opts[q.a][0]) + '</span></div>' +
+        wrongHtml +
+      '</div>' +
+      '<div class="res-tools"><button class="btn-translate res-tr">🌐 ترجم</button></div>';
+
+    list.appendChild(div);
+  });
+
+  // delegated translate for report items
+  list.querySelectorAll('.res-tr').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.res-item');
+      item.classList.toggle('show-ar');
+      const on = item.classList.contains('show-ar');
+      btn.classList.toggle('on', on);
+      btn.textContent = on ? '🌐 إخفاء' : '🌐 ترجم';
+      playClick();
+    });
+  });
+
+  playFinish();
+  if(pct >= 60) bigCelebrate();
+  setTimeout(()=>{ if(pct >= 80) bigCelebrate(); }, 900);
+}
+
+/* =====================================================================
+   TR TRANSLATE ALL
+   ===================================================================== */
+let allTr = false;
+$('#btnTrAll').addEventListener('click', () => {
+  allTr = !allTr;
+  $('#btnTrAll').textContent = allTr ? '🌐 إخفاء الترجمة' : '🌐 ترجمة كل الأسئلة';
+  document.querySelectorAll('#resList .res-item').forEach(it => {
+    it.classList.toggle('show-ar', allTr);
+    const b = it.querySelector('.res-tr');
+    if(b){ b.classList.toggle('on', allTr); b.textContent = allTr ? '🌐 إخفاء' : '🌐 ترجم'; }
+  });
+  playClick();
+});
+
+/* =====================================================================
+   START / RESTART
+   ===================================================================== */
+function startQuiz(){
+  ac();
+  state.idx = 0;
+  state.score = 0;
+  state.records = [];
+  state.answered = false;
+  allTr = false;
+  $('#btnTrAll').textContent = '🌐 ترجمة كل الأسئلة';
+  showScreen('screen-quiz');
+  renderQuestion();
+  playClick();
+}
+$('#btnStart').addEventListener('click', startQuiz);
+$('#btnRestart').addEventListener('click', startQuiz);
+
+/* warm up audio on first interaction */
+window.addEventListener('pointerdown', function warm(){ ac(); window.removeEventListener('pointerdown', warm); }, {once:true});
+
+updateBar();
+</script>
+</body>
+</html>
